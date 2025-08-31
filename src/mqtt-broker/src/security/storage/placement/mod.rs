@@ -87,4 +87,8 @@ impl AuthStorageAdapter for PlacementAuthStorageAdapter {
         let blacklist_storage = BlackListStorage::new(self.client_pool.clone());
         blacklist_storage.delete_blacklist(blacklist).await
     }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }

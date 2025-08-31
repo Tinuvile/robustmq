@@ -17,6 +17,7 @@ use axum::async_trait;
 
 pub mod http;
 pub mod jwt;
+pub mod mysql;
 pub mod plaintext;
 
 #[async_trait]

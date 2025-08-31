@@ -17,6 +17,7 @@ use dashmap::DashMap;
 use metadata_struct::acl::mqtt_acl::MqttAcl;
 use metadata_struct::acl::mqtt_blacklist::MqttAclBlackList;
 use metadata_struct::mqtt::user::MqttUser;
+use std::any::Any;
 
 use crate::common::types::ResultMqttBrokerError;
 use crate::handler::error::MqttBrokerError;
@@ -42,4 +43,7 @@ pub trait AuthStorageAdapter {
     async fn save_blacklist(&self, blacklist: MqttAclBlackList) -> ResultMqttBrokerError;
 
     async fn delete_blacklist(&self, blacklist: MqttAclBlackList) -> ResultMqttBrokerError;
+
+    /// 用于类型转换的方法
+    fn as_any(&self) -> &dyn Any;
 }

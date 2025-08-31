@@ -95,7 +95,9 @@ mod test {
         let cache_manager = Arc::new(CacheManager::new(client_pool, cluster_name));
         let user = MqttUser {
             username: "loboxu".to_string(),
-            password: "lobo_123".to_string(),
+            password_hash: "lobo_123".to_string(),
+            salt: None,
+            auth_config_id: Some(4),
             is_superuser: true,
         };
 

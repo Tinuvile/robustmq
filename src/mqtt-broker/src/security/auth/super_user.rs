@@ -27,8 +27,10 @@ pub async fn init_system_user(
     let conf = broker_config();
     let system_user_info = MqttUser {
         username: conf.mqtt_runtime.default_user.clone(),
-        password: conf.mqtt_runtime.default_password.clone(),
+        password_hash: conf.mqtt_runtime.default_password.clone(),
+        salt: None,
         is_superuser: true,
+        auth_config_id: Some(4), // 使用明文配置
     };
     let user_storage = UserStorage::new(client_pool.clone());
     let res = user_storage
@@ -68,7 +70,9 @@ mod test {
         let cache_manager = Arc::new(CacheManager::new(client_pool, cluster_name));
         let user = MqttUser {
             username: "loboxu".to_string(),
-            password: "lobo_123".to_string(),
+            password_hash: "lobo_123".to_string(),
+            salt: None,
+            auth_config_id: Some(4),
             is_superuser: true,
         };
         cache_manager.add_user(user.clone());
@@ -83,7 +87,9 @@ mod test {
 
         let user = MqttUser {
             username: "loboxu".to_string(),
-            password: "lobo_123".to_string(),
+            password_hash: "lobo_123".to_string(),
+            salt: None,
+            auth_config_id: Some(4),
             is_superuser: false,
         };
         cache_manager.add_user(user.clone());

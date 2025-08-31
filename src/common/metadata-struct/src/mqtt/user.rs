@@ -17,8 +17,10 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
 pub struct MqttUser {
     pub username: String,
-    pub password: String,
+    pub password_hash: String, // 重命名为更明确的名称
+    pub salt: Option<String>,  // 保留盐值字段，因为每个用户的盐值不同
     pub is_superuser: bool,
+    pub auth_config_id: Option<u32>, // 引用认证配置
 }
 
 impl MqttUser {

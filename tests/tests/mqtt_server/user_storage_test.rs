@@ -30,7 +30,9 @@ mod tests {
         let is_superuser = true;
         let user_info = metadata_struct::mqtt::user::MqttUser {
             username: username.clone(),
-            password: password.clone(),
+            password_hash: password.clone(),
+            salt: None,
+            auth_config_id: None,
             is_superuser,
         };
         user_storage.save_user(user_info).await.unwrap();
@@ -41,7 +43,7 @@ mod tests {
             .unwrap()
             .unwrap();
         assert_eq!(result.username, username);
-        assert_eq!(result.password, password);
+        assert_eq!(result.password_hash, password);
         assert_eq!(result.is_superuser, is_superuser);
 
         let result = user_storage.user_list().await.unwrap();

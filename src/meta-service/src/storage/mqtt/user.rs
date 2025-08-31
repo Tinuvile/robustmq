@@ -95,7 +95,9 @@ mod tests {
         let username = "loboxu".to_string();
         let user = MqttUser {
             username: username.clone(),
-            password: "pwd123".to_string(),
+            password_hash: "pwd123".to_string(),
+            salt: None,
+            auth_config_id: None,
             is_superuser: true,
         };
         user_storage.save(&cluster_name, &username, user).unwrap();
@@ -103,7 +105,9 @@ mod tests {
         let username = "lobo1".to_string();
         let user = MqttUser {
             username: username.clone(),
-            password: "pwd1231".to_string(),
+            password_hash: "pwd1231".to_string(),
+            salt: None,
+            auth_config_id: None,
             is_superuser: true,
         };
         user_storage.save(&cluster_name, &username, user).unwrap();

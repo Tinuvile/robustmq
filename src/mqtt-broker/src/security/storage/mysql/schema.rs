@@ -17,10 +17,11 @@
 pub struct TAuthUser {
     pub id: u64,
     pub username: String,
-    pub password: String,
-    pub salt: String,
-    pub is_superuser: String,
-    pub created: u64,
+    pub password_hash: String,
+    pub salt: Option<String>,
+    pub is_superuser: u8,
+    pub auth_config_id: Option<u32>,
+    pub created: String,
 }
 
 #[derive(Debug, PartialEq, Eq, Default)]

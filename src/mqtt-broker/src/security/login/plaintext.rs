@@ -73,7 +73,7 @@ async fn try_get_check_user_by_driver(
 
         let plaintext = Plaintext::new(
             user.username.clone(),
-            user.password.clone(),
+            user.password_hash.clone(),
             cache_manager.clone(),
         );
 
@@ -89,7 +89,7 @@ async fn try_get_check_user_by_driver(
 impl Authentication for Plaintext {
     async fn apply(&self) -> Result<bool, MqttBrokerError> {
         if let Some(user) = self.cache_manager.user_info.get(&self.username) {
-            return Ok(user.password == self.password);
+            return Ok(user.password_hash == self.password);
         }
         return Err(MqttBrokerError::UserDoesNotExist);
     }
@@ -123,7 +123,9 @@ mod test {
         let password = "pwd123".to_string();
         let user = MqttUser {
             username: username.clone(),
-            password: password.clone(),
+            password_hash: password.clone(),
+            salt: None,
+            auth_config_id: Some(4),
             is_superuser: true,
         };
         cache_manager.add_user(user);

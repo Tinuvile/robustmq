@@ -195,6 +195,21 @@ pub enum MqttBrokerError {
 
     #[error("gRPC error: {0}")]
     RpcError(#[from] Status),
+
+    #[error("Unsupported hash algorithm: {0}")]
+    UnsupportedHashAlgorithm(String),
+
+    #[error("Password verification error: {0}")]
+    PasswordVerificationError(String),
+
+    #[error("Password hash error: {0}")]
+    PasswordHashError(String),
+
+    #[error("Invalid salt mode: {0}")]
+    InvalidSaltMode(String),
+
+    #[error("Authentication error: {0}")]
+    AuthenticationError(String),
 }
 
 impl From<MqttBrokerError> for Status {

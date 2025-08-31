@@ -61,8 +61,10 @@ pub async fn create_user_by_req(
 ) -> Result<CreateUserReply, MqttBrokerError> {
     let mqtt_user = MqttUser {
         username: request.username.clone(),
-        password: request.password.clone(),
+        password_hash: request.password.clone(), // 暂时存储明文，后续会在存储层处理
+        salt: None,
         is_superuser: request.is_superuser,
+        auth_config_id: Some(4), // 使用明文配置
     };
 
     let auth_driver = AuthDriver::new(cache_manager.clone(), client_pool.clone());
