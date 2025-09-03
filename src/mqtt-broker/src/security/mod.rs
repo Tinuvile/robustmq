@@ -38,6 +38,7 @@ use storage::placement::PlacementAuthStorageAdapter;
 use storage_adapter::StorageType;
 
 pub mod auth;
+pub mod config;
 pub mod login;
 pub mod storage;
 
