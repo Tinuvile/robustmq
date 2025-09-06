@@ -33,13 +33,13 @@ pub use redis_schema::{RedisAuthnConfig, RedisAuthzConfig};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SecurityConfig {
-    /// 认证提供者配置
+    /// Authentication provider configuration
     #[serde(default)]
     pub authentication: HashMap<String, AuthnProviderConfig>,
-    /// 授权提供者配置
+    /// Authorization provider configuration
     #[serde(default)]
     pub authorization: HashMap<String, AuthzProviderConfig>,
-    /// 全局安全设置
+    /// Global security settings
     pub settings: GlobalSecuritySettings,
 }
 

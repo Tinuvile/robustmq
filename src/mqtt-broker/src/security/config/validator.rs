@@ -12,8 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod listener;
-pub mod manager;
-pub mod provider;
-pub mod schema;
-pub mod validator;
+pub struct ConfigValidator;
+
+impl Default for ConfigValidator {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl ConfigValidator {
+    pub fn new() -> Self {
+        Self {}
+    }
+}

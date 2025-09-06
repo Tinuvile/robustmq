@@ -3048,6 +3048,7 @@ dependencies = [
  "tokio",
  "tokio-rustls 0.26.2",
  "tokio-util",
+ "toml",
  "tonic",
  "tonic-web",
  "tower-http 0.5.2",

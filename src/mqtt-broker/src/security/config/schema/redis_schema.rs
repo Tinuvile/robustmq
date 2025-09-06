@@ -17,31 +17,31 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RedisAuthnConfig {
-    /// Redis 部署模式
+    /// Redis deployment mode
     pub deployment_mode: RedisDeploymentMode,
-    /// Redis 服务器地址列表
+    /// Redis server address list
     pub servers: Vec<String>,
-    /// Sentinel 主服务器名称（仅在 Sentinel 模式下需要）
+    /// Sentinel master server name（only required in Sentinel mode）
     pub sentinel_master_name: Option<String>,
-    /// Redis 数据库索引
+    /// Redis database index
     pub database: u8,
-    /// 认证密码
+    /// Authentication password
     pub password: Option<String>,
-    /// 连接池大小
+    /// Connection pool size
     // pub pool_size: u32,
-    /// 连接超时时间
+    /// Connection timeout
     // pub connect_timeout: Duration,
-    /// 命令执行超时时间
+    /// Command execution timeout
     // pub query_timeout: Duration,
-    /// 用户数据在 Redis 中的键模板
+    /// User data key template in Redis
     pub user_key_template: String,
-    /// 密码字段名
+    /// Password field name
     pub password_field: String,
-    /// 盐值字段名（可选）
+    /// Salt field name（optional）
     pub salt_field: Option<String>,
-    /// 是否为超级用户的字段名（可选）
+    /// Whether the field is the superuser field（optional）
     pub is_superuser_field: Option<String>,
-    /// 密码哈希算法配置
+    /// Password hash algorithm configuration
     pub password_hash_algorithm: PasswordHashConfig,
 }
 
@@ -67,25 +67,25 @@ impl Default for RedisAuthnConfig {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RedisAuthzConfig {
-    /// Redis 部署模式
+    /// Redis deployment mode
     pub deployment_mode: RedisDeploymentMode,
-    /// Redis 服务器地址列表
+    /// Redis server address list
     pub servers: Vec<String>,
-    /// Sentinel 主服务器名称（仅在 Sentinel 模式下需要）
+    /// Sentinel master server name（only required in Sentinel mode）
     pub sentinel_master_name: Option<String>,
-    /// Redis 数据库索引
+    /// Redis database index
     pub database: u8,
-    /// 认证密码
+    /// Authentication password
     pub password: Option<String>,
-    /// 连接池大小
+    /// Connection pool size
     // pub pool_size: u32,
-    /// 命令执行超时时间
+    /// Command execution timeout
     // pub query_timeout: Duration,
-    /// ACL 规则在 Redis 中的键模板
+    /// ACL rules key template in Redis
     pub acl_key_template: String,
-    /// 用户角色键模板（用于 RBAC）
+    /// User role key template（for RBAC）
     pub user_role_key_template: Option<String>,
-    /// 角色权限键模板（用于 RBAC）
+    /// Role permission key template（for RBAC）
     pub role_permission_key_template: Option<String>,
 }
 
@@ -106,16 +106,16 @@ impl Default for RedisAuthzConfig {
     }
 }
 
-/// Redis 部署模式
+/// Redis deployment mode
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum RedisDeploymentMode {
-    /// 单节点模式
+    /// Single node mode
     #[serde(rename = "standalone")]
     Standalone,
-    /// Sentinel 高可用模式
+    /// Sentinel high availability mode
     #[serde(rename = "sentinel")]
     Sentinel,
-    /// 集群模式
+    /// Cluster mode
     #[serde(rename = "cluster")]
     Cluster,
 }
@@ -165,7 +165,7 @@ mod tests {
             ..Default::default()
         };
 
-        // 验证配置是否合理
+        // Validate configuration is reasonable
         assert!(config.sentinel_master_name.is_some());
         assert!(matches!(
             config.deployment_mode,

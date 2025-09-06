@@ -195,6 +195,18 @@ pub enum MqttBrokerError {
 
     #[error("gRPC error: {0}")]
     RpcError(#[from] Status),
+
+    #[error("Failed to load config file {0}: {1}")]
+    ConfigLoadError(String, String),
+
+    #[error("Failed to parse config file {0}: {1}")]
+    ConfigParseError(String, String),
+
+    #[error("Failed to save config file {0}: {1}")]
+    ConfigSaveError(String, String),
+
+    #[error("Failed to serialize config file {0}: {1}")]
+    ConfigSerializeError(String, String),
 }
 
 impl From<MqttBrokerError> for Status {

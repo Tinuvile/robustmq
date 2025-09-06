@@ -18,19 +18,19 @@ use std::time::Duration;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HTTPAuthnConfig {
-    /// HTTP 请求方式
+    /// HTTP request method
     pub method: HTTPMethod,
-    /// HTTP 服务 URL 地址
+    /// HTTP service URL address
     pub url: String,
-    /// 调用条件（Variform 表达式）
+    /// Call condition（Variform expression）
     pub condition: Option<String>,
-    /// HTTP 请求头（可选）
+    /// HTTP request headers（optional）
     pub headers: Option<HashMap<String, String>>,
-    /// 是否启用 TLS
+    /// Enable TLS
     pub enable_tls: bool,
-    /// 请求体模板（支持占位符）
+    /// Request body template（supports placeholders）
     pub body: HTTPRequestBody,
-    /// 请求超时时间
+    /// Request timeout
     pub request_timeout: Duration,
 }
 
@@ -52,23 +52,23 @@ impl Default for HTTPAuthnConfig {
     }
 }
 
-/// HTTP 请求方式
+/// HTTP request method
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum HTTPMethod {
-    /// GET 请求（注意：不推荐，可能在日志中暴露敏感信息）
+    /// GET request（Note: Not recommended, may expose sensitive information in logs）
     #[serde(rename = "get")]
     Get,
-    /// POST 请求（推荐）
+    /// POST request（Recommended）
     #[serde(rename = "post")]
     Post,
 }
 
-/// HTTP 请求体配置
+/// HTTP request body configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HTTPRequestBody {
-    /// 请求体模板（JSON格式）
+    /// Request body template（JSON format）
     pub template: String,
-    /// 支持的占位符说明
+    /// Supported placeholders description
     #[serde(skip)]
     pub supported_placeholders: Vec<&'static str>,
 }
@@ -86,36 +86,36 @@ impl Default for HTTPRequestBody {
 }"#
             .to_string(),
             supported_placeholders: vec![
-                "${username}",         // 用户名
-                "${password}",         // 密码
-                "${clientid}",         // 客户端ID
-                "${ipaddress}",        // 客户端IP地址
-                "${protocol}",         // 协议类型（mqtt, websocket等）
-                "${listener}",         // 监听器名称
-                "${peername}",         // 对端地址
-                "${cert_subject}",     // 证书主题（TLS连接）
-                "${cert_common_name}", // 证书通用名称
+                "${username}",         // Username
+                "${password}",         // Password
+                "${clientid}",         // Client ID
+                "${ipaddress}",        // Client IP address
+                "${protocol}",         // Protocol type（mqtt, websocket etc.）
+                "${listener}",         // Listener name
+                "${peername}",         // Remote address
+                "${cert_subject}",     // Certificate subject（TLS connection）
+                "${cert_common_name}", // Certificate common name
             ],
         }
     }
 }
 
-/// HTTP 授权配置
+/// HTTP authorization configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HTTPAuthzConfig {
-    /// HTTP 请求方式
+    /// HTTP request method
     pub method: HTTPMethod,
-    /// HTTP 服务 URL 地址
+    /// HTTP service URL
     pub url: String,
-    /// 调用条件
+    /// Call condition
     pub condition: Option<String>,
-    /// HTTP 请求头（可选）
+    /// HTTP request headers（optional）
     pub headers: Option<HashMap<String, String>>,
-    /// 是否启用 TLS
+    /// Enable TLS
     pub enable_tls: bool,
-    /// 请求体模板
+    /// Request body template
     pub body: HTTPAuthzRequestBody,
-    /// 请求超时时间
+    /// Request timeout
     pub request_timeout: Duration,
 }
 
@@ -137,10 +137,10 @@ impl Default for HTTPAuthzConfig {
     }
 }
 
-/// HTTP 授权请求体配置
+/// HTTP authorization request body configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HTTPAuthzRequestBody {
-    /// 请求体模板（JSON格式）
+    /// Request body template（JSON format）
     pub template: String,
 }
 
@@ -163,33 +163,33 @@ impl Default for HTTPAuthzRequestBody {
 
 impl HTTPAuthnConfig {
     pub fn validate(&self) -> Result<(), String> {
-        // 验证 URL 格式
+        // Validate URL format
         if self.url.is_empty() {
             return Err("URL cannot be empty".to_string());
         }
 
-        // 简单的 URL 格式检查
+        // Simple URL format check
         if !self.url.starts_with("http://") && !self.url.starts_with("https://") {
             return Err("URL must start with http:// or https://".to_string());
         }
 
-        // TLS 警告检查
+        // TLS warning check
         if !self.enable_tls
             && self.url.starts_with("http://")
             && self.body.template.contains("${password}")
         {
-            // 这里可以发出警告，但不阻止配置
-            // 实际使用时应该记录警告日志
+            // Here we can emit warnings, but do not prevent the configuration
+            // Actual use should record warning logs
         }
 
-        // 验证请求体模板
+        // Validate request body template
         if self.body.template.is_empty() {
             return Err("Request body template cannot be empty".to_string());
         }
 
-        // 检查请求体是否为有效的JSON（当method为POST时）
+        // Check if the request body is a valid JSON（when method is POST）
         if matches!(self.method, HTTPMethod::Post) {
-            // 尝试验证模板是否为有效JSON结构（替换占位符后）
+            // Try to validate if the template is a valid JSON structure（after replacing placeholders）
             let test_template = self
                 .body
                 .template
@@ -208,7 +208,7 @@ impl HTTPAuthnConfig {
         Ok(())
     }
 
-    /// 获取支持的占位符列表
+    /// Get supported placeholders list
     pub fn supported_placeholders(&self) -> Vec<&'static str> {
         self.body.supported_placeholders.clone()
     }
@@ -242,18 +242,18 @@ mod tests {
     fn test_config_validation() {
         let mut config = HTTPAuthnConfig::default();
 
-        // 默认配置应该有效
+        // Default configuration should be valid
         assert!(config.validate().is_ok());
 
-        // 空URL应该无效
+        // Empty URL should be invalid
         config.url = "".to_string();
         assert!(config.validate().is_err());
 
-        // 无效URL格式
+        // Invalid URL format
         config.url = "ftp://example.com".to_string();
         assert!(config.validate().is_err());
 
-        // 有效URL
+        // Valid URL
         config.url = "https://api.example.com/auth".to_string();
         assert!(config.validate().is_ok());
     }
@@ -262,11 +262,11 @@ mod tests {
     fn test_request_body_json_validation() {
         let mut config = HTTPAuthnConfig::default();
 
-        // 有效的JSON模板
+        // Valid JSON template
         config.body.template = r#"{"user": "${username}", "pass": "${password}"}"#.to_string();
         assert!(config.validate().is_ok());
 
-        // 无效的JSON模板
+        // Invalid JSON template
         config.body.template = r#"{"user": "${username", "pass": "${password}"}"#.to_string();
         assert!(config.validate().is_err());
     }
