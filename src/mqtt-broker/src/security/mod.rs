@@ -17,7 +17,11 @@ use crate::handler::cache::MQTTCacheManager;
 use crate::handler::error::MqttBrokerError;
 use crate::security::auth::blacklist::is_blacklist;
 use crate::security::auth::is_allow_acl;
-use crate::security::login::plaintext::plaintext_check_login;
+use crate::security::config::schema::{
+    AuthnProviderConfig, AuthnProviderType, PlaintextAuthnConfig,
+};
+use crate::security::provider::authn::plaintext::create_plaintext_provider;
+use crate::security::provider::authn::{AuthenticationProvider, AuthenticationProviderType};
 use crate::security::storage::storage_trait::AuthStorageAdapter;
 use crate::subscribe::common::get_sub_topic_id_list;
 use common_config::broker::broker_config;
@@ -37,15 +41,21 @@ use storage::mysql::MySQLAuthStorageAdapter;
 use storage::placement::PlacementAuthStorageAdapter;
 use storage_adapter::StorageType;
 
-pub mod auth;
+pub mod auth; // history, will be removed
 pub mod config;
-pub mod login;
+pub mod login; // history, will be removed
+pub mod provider;
 pub mod storage;
+
+#[cfg(test)]
+mod tests;
 
 #[derive(Clone)]
 pub struct AuthDriver {
     cache_manager: Arc<MQTTCacheManager>,
     driver: Arc<dyn AuthStorageAdapter + Send + 'static + Sync>,
+    // Authentication providers for different auth methods
+    authn_providers: Vec<AuthenticationProviderType>,
 }
 
 impl AuthDriver {
@@ -59,10 +69,47 @@ impl AuthDriver {
             }
         };
 
+        // Initialize authentication providers
+        let authn_providers =
+            Self::initialize_authn_providers(cache_manager.clone(), driver.clone());
+
         AuthDriver {
             cache_manager,
             driver,
+            authn_providers,
         }
+    }
+
+    /// Initialize authentication providers
+    /// For now, creates a default plaintext provider
+    /// In the future, this will read from configuration
+    fn initialize_authn_providers(
+        cache_manager: Arc<MQTTCacheManager>,
+        storage_driver: Arc<dyn AuthStorageAdapter + Send + 'static + Sync>,
+    ) -> Vec<AuthenticationProviderType> {
+        let mut providers = Vec::new();
+
+        // Create default plaintext provider
+        // TODO: In the future, read this from configuration system
+        let plaintext_config = AuthnProviderConfig {
+            provider_id: "default-plaintext".to_string(),
+            provider_type: AuthnProviderType::Plaintext(PlaintextAuthnConfig {}),
+            enable: true,
+            priority: 1,
+            description: Some("Default plaintext authentication provider".to_string()),
+        };
+
+        match create_plaintext_provider(plaintext_config, cache_manager, storage_driver) {
+            Ok(provider) => {
+                providers.push(AuthenticationProviderType::Plaintext(provider));
+            }
+            Err(e) => {
+                // Log error but don't panic - authentication can still work with fallback
+                eprintln!("Failed to create plaintext provider: {}", e);
+            }
+        }
+
+        providers
     }
 
     // Permission: Allow && Deny
@@ -79,15 +126,44 @@ impl AuthDriver {
         }
 
         if let Some(info) = login {
-            return plaintext_check_login(
-                &self.driver,
-                &self.cache_manager,
-                &info.username,
-                &info.password,
-            )
-            .await;
+            return self.authenticate_user(&info.username, &info.password).await;
         }
 
+        Ok(false)
+    }
+
+    /// Authenticate user using configured authentication providers
+    async fn authenticate_user(
+        &self,
+        username: &str,
+        password: &str,
+    ) -> Result<bool, MqttBrokerError> {
+        // Sort providers by priority (lower number = higher priority)
+        let mut providers = self.authn_providers.clone();
+        providers.sort_by_key(|a| a.priority());
+
+        // Try each enabled provider in priority order
+        for provider in providers {
+            if !provider.is_enabled() {
+                continue;
+            }
+
+            match provider.authenticate(username, password).await {
+                Ok(result) => {
+                    if result.success {
+                        // Authentication successful
+                        return Ok(true);
+                    }
+                    // Continue to next provider if this one failed
+                }
+                Err(e) => {
+                    // Log error but continue to next provider
+                    eprintln!("Authentication provider {} failed: {}", provider.name(), e);
+                }
+            }
+        }
+
+        // All providers failed or no providers available
         Ok(false)
     }
 

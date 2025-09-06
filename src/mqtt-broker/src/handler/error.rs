@@ -207,6 +207,9 @@ pub enum MqttBrokerError {
 
     #[error("Failed to serialize config file {0}: {1}")]
     ConfigSerializeError(String, String),
+
+    #[error("Authentication provider failed: {0}")]
+    AuthenticationError(String),
 }
 
 impl From<MqttBrokerError> for Status {
