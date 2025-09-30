@@ -20,6 +20,7 @@ use crate::handler::last_will::send_last_will_message;
 use crate::subscribe::manager::SubscribeManager;
 use broker_core::tool::wait_cluster_running;
 use common_config::broker::broker_config;
+use common_metrics::mqtt::session::record_mqtt_session_deleted;
 use grpc_clients::pool::ClientPool;
 use metadata_struct::mqtt::lastwill::LastWillData;
 use protocol::broker::broker_mqtt_inner::{
@@ -29,7 +30,7 @@ use protocol::broker::broker_mqtt_inner::{
 use schema_register::schema::SchemaRegisterManager;
 use std::sync::Arc;
 use storage_adapter::storage::ArcStorageAdapter;
-use tracing::info;
+use tracing::{debug, info};
 
 pub async fn update_cache_by_req(
     cache_manager: &Arc<MQTTCacheManager>,
@@ -59,7 +60,7 @@ pub async fn delete_session_by_req(
     subscribe_manager: &Arc<SubscribeManager>,
     req: &DeleteSessionRequest,
 ) -> Result<DeleteSessionReply, MqttBrokerError> {
-    info!(
+    debug!(
         "Received request from Meta service to delete expired Session. Cluster name :{}, clientId count: {:?}",
         req.cluster_name, req.client_id.len()
     );
@@ -77,7 +78,7 @@ pub async fn delete_session_by_req(
         subscribe_manager.remove_client_id(client_id);
         cache_manager.remove_session(client_id);
     }
-
+    record_mqtt_session_deleted();
     Ok(DeleteSessionReply::default())
 }
 

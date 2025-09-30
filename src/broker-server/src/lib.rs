@@ -56,6 +56,7 @@ use mqtt_broker::{
 use network_server::common::connection_manager::ConnectionManager as MqttConnectionManager;
 use openraft::Raft;
 use pprof_monitor::pprof_monitor::start_pprof_monitor;
+use rate_limit::RateLimiterManager;
 use schema_register::schema::SchemaRegisterManager;
 use std::{
     sync::{
@@ -79,6 +80,7 @@ pub struct BrokerServer {
     journal_params: JournalServerParams,
     client_pool: Arc<ClientPool>,
     rocksdb_engine_handler: Arc<RocksDBEngine>,
+    rate_limiter_manager: Arc<RateLimiterManager>,
     broker_cache: Arc<BrokerCacheManager>,
     config: BrokerConfig,
 }
@@ -98,11 +100,16 @@ impl BrokerServer {
             config.rocksdb.max_open_files,
             column_family_list(),
         ));
+        let rate_limiter_manager = Arc::new(RateLimiterManager::new());
         let main_runtime = create_runtime("init_runtime", config.runtime.runtime_worker_threads);
         let broker_cache = Arc::new(BrokerCacheManager::new(config.cluster_name.clone()));
         let place_params = main_runtime.block_on(async {
-            BrokerServer::build_meta_service(client_pool.clone(), rocksdb_engine_handler.clone())
-                .await
+            BrokerServer::build_meta_service(
+                client_pool.clone(),
+                rocksdb_engine_handler.clone(),
+                broker_cache.clone(),
+            )
+            .await
         });
         let mqtt_params = BrokerServer::build_mqtt_server(
             client_pool.clone(),
@@ -120,6 +127,7 @@ impl BrokerServer {
             mqtt_params,
             client_pool,
             rocksdb_engine_handler,
+            rate_limiter_manager,
         }
     }
     pub fn start(&self) {
@@ -155,6 +163,7 @@ impl BrokerServer {
             },
             rocksdb_engine_handler: self.rocksdb_engine_handler.clone(),
             broker_cache: broker_cache.clone(),
+            rate_limiter_manager: self.rate_limiter_manager.clone(),
         });
         server_runtime.spawn(async move {
             let admin_server = AdminServer::new();
@@ -246,10 +255,14 @@ impl BrokerServer {
     async fn build_meta_service(
         client_pool: Arc<ClientPool>,
         rocksdb_engine_handler: Arc<RocksDBEngine>,
+        broker_cache: Arc<BrokerCacheManager>,
     ) -> MetaServiceServerParams {
         let cache_manager = Arc::new(PlacementCacheManager::new(rocksdb_engine_handler.clone()));
         let journal_call_manager = Arc::new(JournalInnerCallManager::new(cache_manager.clone()));
-        let mqtt_call_manager = Arc::new(MQTTInnerCallManager::new(cache_manager.clone()));
+        let mqtt_call_manager = Arc::new(MQTTInnerCallManager::new(
+            cache_manager.clone(),
+            broker_cache,
+        ));
 
         let data_route = Arc::new(DataRoute::new(
             rocksdb_engine_handler.clone(),
@@ -313,6 +326,7 @@ impl BrokerServer {
             schema_manager,
             metrics_cache_manager,
             rocksdb_engine_handler,
+            broker_cache,
         }
     }
 

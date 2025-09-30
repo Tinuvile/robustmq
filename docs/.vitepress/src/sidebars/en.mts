@@ -66,6 +66,7 @@ export const sidebar = [
                     { text: "Topic Rewrite", link: "/en/RobustMQ-MQTT/TopicRewrite" },
                     { text: "Wildcard Subscription", link: "/en/RobustMQ-MQTT/WildcardSubscription" },
                     { text: "Session Persistence", link: "/en/RobustMQ-MQTT/SessionPersistence" },
+                    { text: "System Alarm", link: "/en/RobustMQ-MQTT/SystemAlarm" },
                 ],
             },
             {
@@ -85,21 +86,10 @@ export const sidebar = [
                     { text: "Overview", link: "/en/RobustMQ-MQTT/Bridge/Overview" },
                     { text: "Local File", link: "/en/RobustMQ-MQTT/Bridge/LocalFile" },
                     { text: "Kafka", link: "/en/RobustMQ-MQTT/Bridge/Kafka" },
+                    { text: "Pulsar", link: "/en/RobustMQ-MQTT/Bridge/Pulsar" },
                     { text: "GreptimeDB", link: "/en/RobustMQ-MQTT/Bridge/GreptimeDB" },
                 ]
             },
-
-      {
-        text: "Observability",
-        collapsed: true,
-        items: [
-          { text: "System Alarm", link: "/en/RobustMQ-MQTT/SystemAlarm" },
-          { text: "Metrics", link: "" },
-          { text: "Trace", link: "" },
-          { text: "Integrate promethrus", link: "" },
-          { text: "Integrate OpenTelemetry", link: "" },
-        ],
-      },
       { text: "MQTTX Testing Guide", link: "/en/RobustMQ-MQTT/MQTTX-Guide" },
       { text: "Performance", link: "" },
       {
@@ -157,6 +147,16 @@ export const sidebar = [
     ],
   },
   {
+    text: "Observability",
+    collapsed: true,
+    items: [
+      { text: "Prometheus Integration", link: "/en/Observability/Prometheus-Integration" },
+      { text: "Infrastructure Metrics", link: "/en/Observability/Infrastructure-Metrics" },
+      { text: "MQTT Specific Metrics", link: "/en/Observability/MQTT-Specific-Metrics" },
+      { text: "Grafana Configuration Guide", link: "/en/Observability/Grafana-Configuration-Guide" },
+    ],
+  },
+  {
     text: "Configuration",
     collapsed: true,
     items: [
@@ -164,6 +164,7 @@ export const sidebar = [
       { text: "MQTT Configuration", link: "/en/Configuration/MQTT" },
       { text: "Meta Configuration", link: "/en/Configuration/META" },
       { text: "Journal Configuration", link: "/en/Configuration/JOURNAL" },
+      { text: "Logging Configuration", link: "/en/Configuration/Logging" },
     ],
   },
   {
@@ -198,6 +199,10 @@ export const sidebar = [
           {
             text: "Code Structure",
             link: "/en/ContributionGuide/ContributingCode/Code-Structure",
+          },
+          {
+            text: "Pprof Usage",
+            link: "/en/ContributionGuide/ContributingCode/Pprof-Usage",
           },
         ],
       },
