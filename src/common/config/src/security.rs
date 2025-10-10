@@ -25,7 +25,9 @@ pub struct AuthnConfig {
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, Default)]
-pub struct AuthzConfig {}
+pub struct AuthzConfig {
+    pub http_config: Option<HttpConfig>,
+}
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct JwtConfig {

@@ -29,7 +29,7 @@ use crate::subscribe::common::get_sub_topic_id_list;
 use common_base::enum_type::mqtt::acl::mqtt_acl_action::MqttAclAction;
 use common_base::enum_type::mqtt::acl::mqtt_acl_resource_type::MqttAclResourceType;
 use common_config::broker::broker_config;
-use common_config::config::MqttAuthStorage;
+use common_config::config::MqttAuthnStorage;
 use common_metrics::mqtt::auth::{
     record_mqtt_acl_failed, record_mqtt_acl_success, record_mqtt_blacklist_blocked,
 };
@@ -50,6 +50,7 @@ use storage::postgresql::PostgresqlAuthStorageAdapter;
 use storage::redis::RedisAuthStorageAdapter;
 
 pub mod auth;
+pub mod authz;
 pub mod login;
 pub mod storage;
 
@@ -351,7 +352,7 @@ impl AuthDriver {
 
 pub fn build_driver(
     client_pool: Arc<ClientPool>,
-    auth: MqttAuthStorage,
+    auth: MqttAuthnStorage,
 ) -> Result<Arc<dyn AuthStorageAdapter + Send + 'static + Sync>, MqttBrokerError> {
     let storage_type = AuthType::from_str(&auth.storage_type)
         .map_err(|_| MqttBrokerError::UnavailableStorageType)?;

@@ -87,7 +87,7 @@ pub struct BrokerConfig {
     pub mqtt_keep_alive: MqttKeepAlive,
 
     #[serde(default = "default_mqtt_auth_storage")]
-    pub mqtt_auth_storage: MqttAuthStorage,
+    pub mqtt_auth_storage: MqttAuthnStorage,
 
     #[serde(default = "default_mqtt_auth_config")]
     pub mqtt_auth_config: MqttAuthConfig,
@@ -195,15 +195,20 @@ pub struct MqttServer {
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, Default)]
-pub struct MqttAuthStorage {
+pub struct MqttAuthnStorage {
     pub storage_type: String,
-
     pub journal_addr: String,
-
     pub mysql_addr: String,
-
     pub postgres_addr: String,
+    pub redis_addr: String,
+}
 
+#[derive(Debug, Deserialize, Serialize, Clone, Default)]
+pub struct MqttAuthzStorage {
+    pub storage_type: String, // file/placement/mysql/postgresql/redis
+    pub journal_addr: String,
+    pub mysql_addr: String,
+    pub postgres_addr: String,
     pub redis_addr: String,
 }
 
